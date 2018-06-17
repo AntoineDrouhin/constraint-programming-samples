@@ -1,21 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package constraintprogramming;
 
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.nary.automata.FA.FiniteAutomaton;
-import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.solver.variables.IntVar;
 
-/**
- *
- * @author oscaramzalag
- */
 public class ChocoTest {
 
     /**
@@ -28,7 +19,7 @@ public class ChocoTest {
         //dames();
         //carree();
         //decomposition();
-        oneZeroOne();
+        oneZeroOneV3();
         
     }
     
@@ -145,12 +136,12 @@ public class ChocoTest {
         model.allDifferent(UNUN, UNDEUX, DEUXUN, DEUXDEUX, TROISUN,
                 TROISDEUX, QUATREUN, QUATREDEUX).post();
         
-        IntVar[] vars = {
-            UNDEUX, UNUN
-        };
-        
         int[] coeffs = new int[]{
             1,-1
+        };
+        
+        IntVar[] vars = {
+            UNDEUX, UNUN
         };
         
         IntVar[] vars2 = {
@@ -170,6 +161,35 @@ public class ChocoTest {
         model.scalar(vars2, coeffs, "=", 3 ).post();
         model.scalar(vars3, coeffs, "=", 4 ).post();
         model.scalar(vars4, coeffs, "=", 5 ).post();
+        
+        for (Solution s : solver.findAllSolutions()) {
+            System.out.println(s);
+        }
+    }
+    
+    /*
+        By bader, annas, antoine
+    */
+    public static void oneZeroOneV3(){
+        
+        int N = 7;
+        
+        Model model = new Model("");
+        
+        IntVar[] vars = new IntVar[2*N];
+                
+        for(int i = 0; i < vars.length; i+=2){
+            vars[i] = model.intVar(i/2 + 1 + "UN" , 0, N * 2 - 1);
+            vars[i+1] = model.intVar(i/2+ 1 + "DEUX" , 0, N * 2 - 1);
+        }
+        
+        model.allDifferent(vars).post();
+        
+        for(int i = 0; i < vars.length; i+=2){
+            model.arithm(vars[i+1], "-", vars[i], "=", i / 2 + 2).post();
+        }
+        
+        Solver solver = model.getSolver();      
         
         for (Solution s : solver.findAllSolutions()) {
             System.out.println(s);
