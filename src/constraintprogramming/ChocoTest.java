@@ -6,6 +6,7 @@ import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.constraints.nary.automata.FA.FiniteAutomaton;
 import org.chocosolver.solver.variables.IntVar;
+import org.chocosolver.util.tools.ArrayUtils;
 
 public class ChocoTest {
 
@@ -19,7 +20,8 @@ public class ChocoTest {
         //dames();
         //carree();
         //decomposition();
-        oneZeroOneV3();
+//        oneZeroOneV3();
+        allDifferentSumEqualSquareEqual();
         
     }
     
@@ -301,6 +303,56 @@ public class ChocoTest {
          
          
     }
-       
+ 
+    
+    public static void allDifferentSumEqualSquareEqual() {
+        Model model = new Model("allDifferentSumEqualSquareEqual");
+        
+        int n = 8;
+        IntVar[] AB = new IntVar[n];
+        IntVar[] A = new IntVar[n/2];
+        IntVar[] B = new IntVar[n/2];
+        
+        int squareSumA = 0;
+        int squareSumB = 0;
+        for (int i = 0; i < n/2; i++) {
+            A[i] = model.intVar("A" + i, 1, n);
+            B[i] = model.intVar("B" + i, 1, n); 
+
+            squareSumA += A[i].getValue() * A[i].getValue();
+            squareSumB += B[i].getValue() * B[i].getValue();
+        }
+        
+        IntVar ssA = model.intVar(squareSumA);
+        IntVar ssB = model.intVar(squareSumB);
+        
+        AB = ArrayUtils.append(A, B);
+        model.allDifferent(AB).post();
+        
+        // Calc sum        
+        int sum = 0;
+//        int squareSum = 0;
+        for (int i = 1; i <= n; i++) {
+            sum += i;
+//            squareSum += i * i;
+        }
+        
+        model.sum(A, "=", sum/2).post();
+        model.sum(B, "=", sum/2).post();
+        
+        model.arithm(ssA, "=", ssB).post();
+        
+        for (int i = 0; i < n/2 - 1; i++) {
+            model.arithm(A[i], "<", A[i+1]).post();
+            model.arithm(B[i], "<", B[i+1]).post();
+        }
+        
+        Solver solver = model.getSolver();
+        
+        for (Solution s : solver.findAllSolutions()) {
+            System.out.println(s);
+        }
+
+    }
         
 }
